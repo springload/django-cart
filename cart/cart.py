@@ -1,5 +1,5 @@
 import datetime
-import models
+import cart.models as models
 
 CART_ID = 'CART-ID'
 
@@ -81,7 +81,7 @@ class Cart:
         for item in self.cart.item_set.all():
             result += 1 * item.quantity
         return result
-        
+
     def summary(self):
         result = 0
         for item in self.cart.item_set.all():
