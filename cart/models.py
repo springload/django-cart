@@ -3,6 +3,7 @@ from django.utils.translation import ugettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
 
 
+
 class Cart(models.Model):
     creation_date = models.DateTimeField(verbose_name=_('creation date'))
     checked_out = models.BooleanField(default=False, verbose_name=_('checked out'))
@@ -15,6 +16,7 @@ class Cart(models.Model):
     def __unicode__(self):
         return unicode(self.creation_date)
 
+
 class ItemManager(models.Manager):
     def get(self, *args, **kwargs):
         if 'product' in kwargs:
@@ -23,9 +25,10 @@ class ItemManager(models.Manager):
             del(kwargs['product'])
         return super(ItemManager, self).get(*args, **kwargs)
 
+
 class Item(models.Model):
     cart = models.ForeignKey(Cart, verbose_name=_('cart'))
-    quantity = models.PositiveIntegerField(verbose_name=_('quantity'))
+    quantity = models.DecimalField(max_digits=18, decimal_places=2, verbose_name=_('quantity'))
     unit_price = models.DecimalField(max_digits=18, decimal_places=2, verbose_name=_('unit price'))
     # product as generic relation
     content_type = models.ForeignKey(ContentType)
@@ -54,4 +57,3 @@ class Item(models.Model):
         self.object_id = product.pk
 
     product = property(get_product, set_product)
-
