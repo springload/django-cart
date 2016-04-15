@@ -1,17 +1,21 @@
 import datetime
 import cart.models as models
+from decimal import Decimal
 
 CART_ID = 'CART-ID'
 
 class ItemAlreadyExists(Exception):
     pass
 
+
 class ItemDoesNotExist(Exception):
     pass
+
 
 class Cart:
     def __init__(self, request):
         cart_id = request.session.get(CART_ID)
+
         if cart_id:
             try:
                 cart = models.Cart.objects.get(id=cart_id, checked_out=False)
@@ -20,6 +24,7 @@ class Cart:
         else:
             cart = self.new(request)
         self.cart = cart
+        self.persisted = False
 
     def __iter__(self):
         for item in self.cart.item_set.all():
@@ -42,11 +47,7 @@ class Cart:
             item.cart = self.cart
             item.product = product
             item.unit_price = unit_price
-            item.quantity = quantity
-            item.save()
-        else: #ItemAlreadyExists
-            item.unit_price = unit_price
-            item.quantity = item.quantity + int(quantity)
+            item.quantity = Decimal(quantity)
             item.save()
 
     def remove(self, product):
@@ -73,22 +74,21 @@ class Cart:
                 item.delete()
             else:
                 item.unit_price = unit_price
-                item.quantity = int(quantity)
+                item.quantity = Decimal(quantity)
                 item.save()
 
-    def count(self):
-        result = 0
-        for item in self.cart.item_set.all():
-            result += 1 * item.quantity
-        return result
-
-    def summary(self):
+    def pre_tax_total(self):
         result = 0
         for item in self.cart.item_set.all():
             result += item.total_price
         return result
 
+    def total(self):
+        result = self.pre_tax_total()
+        if self.cart.tax_rate > 0:
+            result += result * self.cart.tax_rate
+        return result
+
     def clear(self):
         for item in self.cart.item_set.all():
             item.delete()
-
