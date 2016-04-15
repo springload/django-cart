@@ -1,12 +1,17 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
-
+from decimal import Decimal, getcontext
 
 
 class Cart(models.Model):
+
     creation_date = models.DateTimeField(verbose_name=_('creation date'))
     checked_out = models.BooleanField(default=False, verbose_name=_('checked out'))
+    
+    currency_code = models.CharField(default='USD', verbose_name=_('currency'), max_length=20)
+    tax_rate = models.DecimalField(default=0, max_digits=6, decimal_places=2)
+    exchange_rate = models.DecimalField(default=1, verbose_name=_('Exchange Rate'), max_digits=10, decimal_places=6)
 
     class Meta:
         verbose_name = _('cart')
@@ -14,7 +19,7 @@ class Cart(models.Model):
         ordering = ('-creation_date',)
 
     def __unicode__(self):
-        return unicode(self.creation_date)
+        return u'Cart  {0} Created: {1}'.format(self.id, self.creation_date)
 
 
 class ItemManager(models.Manager):
@@ -44,9 +49,10 @@ class Item(models.Model):
     def __unicode__(self):
         return u'%d units of %s' % (self.quantity, self.product.__class__.__name__)
 
+    @property
     def total_price(self):
-        return self.quantity * self.unit_price
-    total_price = property(total_price)
+        r = self.quantity * self.unit_price
+        return int(round(r, 0))
 
     # product
     def get_product(self):
