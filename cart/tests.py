@@ -1,10 +1,9 @@
-from cart import models
-from django.test import TestCase, RequestFactory, Client
 from .models import Cart, Item
+from django.test import TestCase, RequestFactory, Client
 from django.contrib.auth.models import User, AnonymousUser
 import datetime
 from decimal import Decimal
-from .cart import Cart
+from .cart import Cart as rCart
 
 
 class CartAndItemModelsTestCase(TestCase):
@@ -19,7 +18,7 @@ class CartAndItemModelsTestCase(TestCase):
         """
             Helper function so I don't repeat myself
         """
-        cart = models.Cart()
+        cart = Cart()
         cart.creation_date = creation_date
         cart.checked_out = False
         cart.save()
@@ -52,7 +51,7 @@ class CartAndItemModelsTestCase(TestCase):
         cart = self._create_cart_in_database(creation_date)
         id = cart.id
 
-        cart_from_database = models.Cart.objects.get(pk=id)
+        cart_from_database = Cart.objects.get(pk=id)
         self.assertEquals(cart, cart_from_database)
 
     def test_item_creation_and_association_with_cart(self):
@@ -108,12 +107,11 @@ class CartAndItemModelsTestCase(TestCase):
 
     def test_update_cart(self):
         user = self._create_user_in_database()
-        cart = Cart(self.request)
+        cart = rCart(self.request)
         cart.new(self.request)
         cart.add(product=user, quantity=3, unit_price=100)
-        cart.persist()
         cart.update(product=user, quantity=2.5, unit_price=55555)
-        self.assertEquals(cart.summary(), 13888)
+        self.assertEquals(cart.total(), 138888)
 
     def test_item_unicode(self):
         user = self._create_user_in_database()
