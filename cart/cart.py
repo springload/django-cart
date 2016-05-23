@@ -4,6 +4,7 @@ from decimal import Decimal
 
 CART_ID = 'CART-ID'
 
+
 class ItemAlreadyExists(Exception):
     pass
 
@@ -24,7 +25,21 @@ class Cart:
         else:
             cart = self.new(request)
         self.cart = cart
-        self.persisted = False
+
+    @staticmethod
+    def get(request):
+        cart_id = request.session.get(CART_ID)
+        if cart_id:
+            try:
+                cart_exists = models.Cart.objects.filter(id=cart_id, checked_out=False).count() or False
+            except models.Cart.DoesNotExist:
+                cart_exists = False
+        else:
+            cart_exists = False
+        if cart_exists:
+            return Cart(request)
+        else:
+            return None
 
     def __iter__(self):
         for item in self.cart.item_set.all():
@@ -37,6 +52,7 @@ class Cart:
         return cart
 
     def add(self, product, unit_price, quantity=1):
+        assert self.cart is not None
         try:
             item = models.Item.objects.get(
                 cart=self.cart,
@@ -51,6 +67,7 @@ class Cart:
             item.save()
 
     def remove(self, product):
+        assert self.cart is not None
         try:
             item = models.Item.objects.get(
                 cart=self.cart,
@@ -62,6 +79,7 @@ class Cart:
             item.delete()
 
     def update(self, product, quantity, unit_price=None):
+        assert self.cart is not None
         try:
             item = models.Item.objects.get(
                 cart=self.cart,
@@ -69,7 +87,7 @@ class Cart:
             )
         except models.Item.DoesNotExist:
             raise ItemDoesNotExist
-        else: #ItemAlreadyExists
+        else:  # ItemAlreadyExists
             if quantity == 0:
                 item.delete()
             else:
@@ -78,17 +96,20 @@ class Cart:
                 item.save()
 
     def pre_tax_total(self):
+        assert self.cart is not None
         result = 0
         for item in self.cart.item_set.all():
             result += item.total_price
         return result
 
     def total(self):
+        assert self.cart is not None
         result = self.pre_tax_total()
         if self.cart.tax_rate > 0:
             result += result * self.cart.tax_rate
         return result
 
     def clear(self):
+        assert self.cart is not None
         for item in self.cart.item_set.all():
             item.delete()
