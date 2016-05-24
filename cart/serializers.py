@@ -4,7 +4,7 @@ from rest_framework import serializers
 from .models import Cart, Item
 
 
-class CartItemSerializer(serializers.HyperlinkedModelSerializer):
+class ItemSerializer(serializers.HyperlinkedModelSerializer):
     content_type = serializers.StringRelatedField(many=False)
 
     class Meta:
@@ -13,7 +13,7 @@ class CartItemSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class CartSerializer(serializers.HyperlinkedModelSerializer):
-    item_set = CartItemSerializer(many=True, read_only=True)
+    item_set = ItemSerializer(many=True, read_only=True)
 
     class Meta:
         model = Cart

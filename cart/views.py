@@ -1,9 +1,13 @@
+from django.http import Http404
+
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 
 from .cart import Cart
-from .serializers import CartSerializer
+from .models import Item
+from .serializers import CartSerializer, ItemSerializer
+from .decorators import cart_required
 
 
 class CartView(APIView):
@@ -22,7 +26,24 @@ class CartView(APIView):
             serialized_cart.data['pre_tax_total'] = cart.pre_tax_total()
             serialized_cart.data['total'] = cart.total()
             return Response(serialized_cart.data)
-        return Response()
+        raise Http404
+
+
+class ItemDetail(APIView):
+    """
+    Retrieve, update or delete a snippet instance.
+    """
+    def get_object(self, pk):
+        try:
+            return Item.objects.get(pk=pk)
+        except Item.DoesNotExist:
+            raise Http404
+
+    @cart_required
+    def get(self, request, pk, format=None):
+        item = self.get_object(pk)
+        serializer = ItemSerializer(item)
+        return Response(serializer.data)
 
 
 @api_view(['GET'])
