@@ -1,9 +1,9 @@
-from .models import Cart, Item
+from cart.models import Cart, Item
 from django.test import TestCase, RequestFactory, Client
 from django.contrib.auth.models import User, AnonymousUser
 import datetime
 from decimal import Decimal
-from .cart import Cart as rCart
+from cart.cart import Cart as rCart
 
 
 class CartAndItemModelsTestCase(TestCase):
