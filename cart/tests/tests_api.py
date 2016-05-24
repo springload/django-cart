@@ -53,6 +53,14 @@ class CartApiTestCase(TestCase):
         self.assertEqual(response.data['serialized_product']['fields']['username'], user.username)
         self.assertEqual(response.data['serialized_product']['fields']['email'], user.email)
 
+    def test_api_invalid_items(self):
+        cart = Cart(self.request)
+        session = self.client.session
+        session[CART_ID] = cart.cart.id
+        session.save()
+        response = self.client.get(reverse('cart_item', kwargs={'pk': '456789'}), format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
     def test_api_cart_cart(self):
         cart = Cart(self.request)
         session = self.client.session
