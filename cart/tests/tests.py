@@ -1,9 +1,10 @@
-from cart.models import Cart, Item
-from django.test import TestCase, RequestFactory, Client
-from django.contrib.auth.models import User, AnonymousUser
 import datetime
 from decimal import Decimal
+from django.contrib.auth.models import AnonymousUser
+from django.test import TestCase, RequestFactory, Client
+from cart.models import Cart
 from cart.cart import Cart as rCart
+from .utils import _create_cart_in_database, _create_user_in_database, _create_item_in_database
 
 
 class CartAndItemModelsTestCase(TestCase):
@@ -14,41 +15,9 @@ class CartAndItemModelsTestCase(TestCase):
         self.request.user = AnonymousUser()
         self.request.session = {}
 
-    def _create_cart_in_database(self, creation_date=datetime.datetime.now(), checked_out=False):
-        """
-            Helper function so I don't repeat myself
-        """
-        cart = Cart()
-        cart.creation_date = creation_date
-        cart.checked_out = False
-        cart.save()
-        return cart
-
-    def _create_item_in_database(self, cart, product, quantity=1.3, unit_price=Decimal("100")):
-        """
-            Helper function so I don't repeat myself
-        """
-        item = Item()
-        item.cart = cart
-        item.product = product
-        item.quantity = quantity
-        item.unit_price = unit_price
-        item.save()
-
-        return item
-
-    def _create_user_in_database(self):
-        """
-            Helper function so I don't repeat myself
-        """
-        user = User(username="user_for_sell", password="sold",
-                email="example@example.com")
-        user.save()
-        return user
-
     def test_cart_creation(self):
         creation_date = datetime.datetime.now()
-        cart = self._create_cart_in_database(creation_date)
+        cart = _create_cart_in_database(creation_date)
         id = cart.id
 
         cart_from_database = Cart.objects.get(pk=id)
@@ -69,10 +38,10 @@ class CartAndItemModelsTestCase(TestCase):
             you just need to change the user for your product model
             in your code and you're good to go.
         """
-        user = self._create_user_in_database()
+        user = _create_user_in_database()
 
-        cart = self._create_cart_in_database()
-        item = self._create_item_in_database(cart, user, quantity=1.5, unit_price=Decimal("100"))
+        cart = _create_cart_in_database()
+        item = _create_item_in_database(cart, user, quantity=1.5, unit_price=Decimal("100"))
 
         # get the first item in the cart
         item_in_cart = cart.item_set.all()[0]
@@ -91,22 +60,22 @@ class CartAndItemModelsTestCase(TestCase):
         unit prices instantiating the Decimal class in
         decimal.Decimal.
         """
-        user = self._create_user_in_database()
-        cart = self._create_cart_in_database()
+        user = _create_user_in_database()
+        cart = _create_cart_in_database()
 
         # not safe to do as the field is Decimal type. It works for integers but
         # doesn't work for float
-        item_with_unit_price_as_integer = self._create_item_in_database(cart, product=user, quantity=1.5, unit_price=200)
+        item_with_unit_price_as_integer = _create_item_in_database(cart, product=user, quantity=1.5, unit_price=200)
 
         self.assertEquals(item_with_unit_price_as_integer.total_price, 300)
 
         # this is the right way to associate unit prices
-        item_with_unit_price_as_decimal = self._create_item_in_database(cart,
+        item_with_unit_price_as_decimal = _create_item_in_database(cart,
                 product=user, quantity=4.5, unit_price=300)
         self.assertEquals(item_with_unit_price_as_decimal.total_price, 1350)
 
     def test_update_cart(self):
-        user = self._create_user_in_database()
+        user = _create_user_in_database()
         cart = rCart(self.request)
         cart.new(self.request)
         cart.add(product=user, quantity=3, unit_price=100)
@@ -114,9 +83,9 @@ class CartAndItemModelsTestCase(TestCase):
         self.assertEquals(cart.total(), 138888)
 
     def test_item_unicode(self):
-        user = self._create_user_in_database()
-        cart = self._create_cart_in_database()
+        user = _create_user_in_database()
+        cart = _create_cart_in_database()
 
-        item = self._create_item_in_database(cart, product=user, quantity=Decimal(3), unit_price=Decimal(100))
+        item = _create_item_in_database(cart, product=user, quantity=Decimal(3), unit_price=Decimal(100))
 
         self.assertEquals(item.__unicode__(), "3 units of User")

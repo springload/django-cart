@@ -19,6 +19,8 @@ class CartView(APIView):
         cart = Cart.get(request)
         if cart:
             serialized_cart = CartSerializer(cart.cart)
+            serialized_cart.data['pre_tax_total'] = cart.pre_tax_total()
+            serialized_cart.data['total'] = cart.total()
             return Response(serialized_cart.data)
         return Response()
 

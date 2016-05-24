@@ -1,6 +1,9 @@
+import json
+
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
+from django.core import serializers
 
 
 class Cart(models.Model):
@@ -63,5 +66,9 @@ class Item(models.Model):
     def set_product(self, product):
         self.content_type = ContentType.objects.get_for_model(type(product))
         self.object_id = product.pk
+
+    def serialized_product(self, format='json'):
+        # bit hacky but works
+        return json.loads(serializers.serialize(format, [self.product, ]))[0]
 
     product = property(get_product, set_product)
