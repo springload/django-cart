@@ -45,6 +45,25 @@ class ItemDetail(APIView):
         serializer = ItemSerializer(item)
         return Response(serializer.data)
 
+    @cart_required
+    def put(self, request, pk, format=None):
+        # TODO Jordi to complete
+        return True
+        # snippet = self.get_object(pk)
+        # serializer = SnippetSerializer(snippet, data=request.data)
+        # if serializer.is_valid():
+        #     serializer.save()
+        #     return Response(serializer.data)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @cart_required
+    def delete(self, request, pk, format=None):
+        # TODO Jordi to complete
+        return True
+        # snippet = self.get_object(pk)
+        # snippet.delete()
+        # return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 @api_view(['GET'])
 def cart_count(request):
