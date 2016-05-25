@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.test import TestCase
 from django.core.urlresolvers import reverse
 from django.contrib.auth.models import AnonymousUser
+from django.contrib.contenttypes.models import ContentType
 
 from rest_framework import status
 from rest_framework.test import APIRequestFactory
@@ -102,6 +103,28 @@ class CartApiTestCase(TestCase):
             self.assertTrue(True)
         else:
             self.assertTrue(False)
+
+        response = self.client.get(reverse('cart_count'), format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {'count': 0})
+
+    def test_api_post_item(self):
+        user = _create_user_in_database()
+        content_type = ContentType.objects.get(model='user')
+        response = self.client.post(
+            reverse('cart_items'),
+            {
+                'content_type': content_type.pk,
+                'object_id': user.id,
+                'quantity': 1,
+                'unit_price': '10.00'
+            },
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.get(reverse('cart_count'), format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {'count': 1})
 
     def test_api_cart_cart(self):
         cart = Cart(self.request)

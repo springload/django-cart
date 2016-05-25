@@ -1,4 +1,5 @@
 from django.http import Http404
+from django.contrib.contenttypes.models import ContentType
 
 from rest_framework import status
 from rest_framework.response import Response
@@ -76,7 +77,36 @@ class ItemDetail(APIView):
             cart.remove(product)
         except ItemDoesNotExist:
             raise Http404
+        # TODO Jordi check if we need the whole cart or nothing
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ItemList(APIView):
+    """
+        Create a new item
+    """
+    def post(self, request, format=None):
+        cart = Cart.get(request)
+        if cart is None:
+            cart = Cart(request)
+        serializer = ItemSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                content_type = ContentType.objects.get(pk=request.data['content_type'])
+                product = content_type.get_object_for_this_type(pk=request.data['object_id'])
+            except:
+                raise Http404
+            cart.add(product, serializer.validated_data['quantity'], serializer.validated_data['unit_price'])
+            try:
+                item = Item.objects.get(
+                    cart=cart.cart,
+                    product=product,
+                )
+            except:
+                raise Http404
+            serializer = ItemSerializer(item)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['GET'])

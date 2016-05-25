@@ -5,13 +5,15 @@ from .models import Cart, Item
 
 
 class ItemSerializer(serializers.HyperlinkedModelSerializer):
-    content_type = serializers.StringRelatedField(many=False)
-    cart = serializers.StringRelatedField(many=False)
+    content_type = serializers.PrimaryKeyRelatedField(many=False, read_only=True)
+    cart = serializers.PrimaryKeyRelatedField(many=False, read_only=True)
+    quantity = serializers.DecimalField(decimal_places=2, max_digits=18, required=False)
+    unit_price = serializers.DecimalField(decimal_places=2, max_digits=18, required=False)
 
     class Meta:
         model = Item
-        fields = ('pk', 'cart', 'quantity', 'unit_price', 'total_price', 'content_type', 'serialized_product')
-        read_only_fields = ('pk', 'cart', 'total_price', 'content_type', 'serialized_product')
+        fields = ('pk', 'cart', 'object_id', 'quantity', 'unit_price', 'total_price', 'content_type', 'serialized_product')
+        read_only_fields = ('pk', 'cart', 'object_id', 'total_price', 'content_type', 'serialized_product')
 
 
 class CartSerializer(serializers.HyperlinkedModelSerializer):
