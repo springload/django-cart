@@ -10,6 +10,7 @@ from rest_framework.test import APIClient
 
 from cart.cart import Cart, CART_ID
 from .utils import _create_user_in_database, _create_item_in_database, _create_cart_in_database
+from cart.models import Item
 
 
 class CartApiTestCase(TestCase):
@@ -45,7 +46,7 @@ class CartApiTestCase(TestCase):
         session.save()
         user = _create_user_in_database()
         item = _create_item_in_database(cart.cart, user, quantity=1.5, unit_price=Decimal("100"))
-        response = self.client.get(reverse('cart_item', kwargs={'pk': item.id}), format='json')
+        response = self.client.get(reverse('cart_item', kwargs={'pk': item.pk}), format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['unit_price'], '100.00')
         self.assertEqual(response.data['total_price'], 150)
@@ -65,6 +66,23 @@ class CartApiTestCase(TestCase):
         item = _create_item_in_database(new_cart, user, quantity=1, unit_price=Decimal("5"))
         response = self.client.get(reverse('cart_item', kwargs={'pk': item.id}), format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_api_put_item(self):
+        cart = Cart(self.request)
+        session = self.client.session
+        session[CART_ID] = cart.cart.id
+        session.save()
+        user = _create_user_in_database()
+        item = _create_item_in_database(cart.cart, user, quantity=1, unit_price=Decimal("5"))
+        response = self.client.put(
+            reverse('cart_item', kwargs={'pk': item.id}),
+            {'quantity': '2.00', 'unit_price': item.unit_price},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['quantity'], '2.00')
+        item = Item.objects.get(pk=response.data['pk'])
+        self.assertEqual(Decimal(response.data['quantity']), item.quantity)
 
     def test_api_cart_cart(self):
         cart = Cart(self.request)

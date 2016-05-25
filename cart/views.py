@@ -1,5 +1,6 @@
 from django.http import Http404
 
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
@@ -31,7 +32,7 @@ class CartView(APIView):
 
 class ItemDetail(APIView):
     """
-    Retrieve, update or delete a snippet instance.
+    Retrieve, update or delete a Item instance.
     """
     def get_object(self, pk):
         try:
@@ -47,14 +48,20 @@ class ItemDetail(APIView):
 
     @cart_required
     def put(self, request, pk, format=None):
-        # TODO Jordi to complete
-        return True
-        # snippet = self.get_object(pk)
-        # serializer = SnippetSerializer(snippet, data=request.data)
-        # if serializer.is_valid():
-        #     serializer.save()
-        #     return Response(serializer.data)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        item = self.get_object(pk)
+        serializer = ItemSerializer(item, data=request.data)
+        if serializer.is_valid():
+            cart = Cart.get(request)
+            product = item.product
+            try:
+                cart.update(product, serializer.validated_data['quantity'], serializer.validated_data['unit_price'])
+            except Item.DoesNotExist:
+                raise Http404
+            # TODO check if we need the whole cart or just the item
+            item = self.get_object(pk)
+            serializer = ItemSerializer(item)
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @cart_required
     def delete(self, request, pk, format=None):
