@@ -9,7 +9,7 @@ from rest_framework.test import APIRequestFactory
 from rest_framework.test import APIClient
 
 from cart.cart import Cart, CART_ID
-from .utils import _create_user_in_database, _create_item_in_database
+from .utils import _create_user_in_database, _create_item_in_database, _create_cart_in_database
 
 
 class CartApiTestCase(TestCase):
@@ -60,6 +60,11 @@ class CartApiTestCase(TestCase):
         session.save()
         response = self.client.get(reverse('cart_item', kwargs={'pk': '456789'}), format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        user = _create_user_in_database()
+        new_cart = _create_cart_in_database()
+        item = _create_item_in_database(new_cart, user, quantity=1, unit_price=Decimal("5"))
+        response = self.client.get(reverse('cart_item', kwargs={'pk': item.id}), format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_api_cart_cart(self):
         cart = Cart(self.request)
