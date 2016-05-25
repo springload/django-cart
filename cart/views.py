@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 
-from .cart import Cart
+from .cart import Cart, ItemDoesNotExist, ItemAlreadyExists
 from .models import Item
 from .serializers import CartSerializer, ItemSerializer
 from .decorators import cart_required
@@ -52,12 +52,14 @@ class ItemDetail(APIView):
         serializer = ItemSerializer(item, data=request.data)
         if serializer.is_valid():
             cart = Cart.get(request)
+            if not cart:
+                raise Http404
             product = item.product
             try:
                 cart.update(product, serializer.validated_data['quantity'], serializer.validated_data['unit_price'])
-            except Item.DoesNotExist:
+            except ItemDoesNotExist:
                 raise Http404
-            # TODO check if we need the whole cart or just the item
+            # TODO Jordi check if we need the whole cart or just the item
             item = self.get_object(pk)
             serializer = ItemSerializer(item)
             return Response(serializer.data)
@@ -65,11 +67,16 @@ class ItemDetail(APIView):
 
     @cart_required
     def delete(self, request, pk, format=None):
-        # TODO Jordi to complete
-        return True
-        # snippet = self.get_object(pk)
-        # snippet.delete()
-        # return Response(status=status.HTTP_204_NO_CONTENT)
+        item = self.get_object(pk)
+        cart = Cart.get(request)
+        if not cart:
+            raise Http404
+        product = item.product
+        try:
+            cart.remove(product)
+        except ItemDoesNotExist:
+            raise Http404
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['GET'])
