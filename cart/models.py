@@ -42,7 +42,7 @@ class Item(models.Model):
     unit_price = models.DecimalField(max_digits=18, decimal_places=2, verbose_name=_('unit price'))
     # product as generic relation
     content_type = models.ForeignKey(ContentType)
-    object_id = models.PositiveIntegerField()
+    object_id = models.CharField(max_length=128)
 
     objects = ItemManager()
 
