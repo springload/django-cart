@@ -114,8 +114,8 @@ class CartApiTestCase(TestCase):
         response = self.client.post(
             reverse('cart_items'),
             {
-                'content_type': content_type.pk,
-                'object_id': user.id,
+                'content_type': '%s.%s' % (content_type.app_label, content_type.model),
+                'object_id': user.pk,
                 'quantity': 1,
                 'unit_price': '10.00'
             },

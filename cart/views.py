@@ -92,7 +92,8 @@ class ItemList(APIView):
         serializer = ItemSerializer(data=request.data)
         if serializer.is_valid():
             try:
-                content_type = ContentType.objects.get(pk=request.data['content_type'])
+                data_content_type = [x for x in request.data['content_type'].split('.')]
+                content_type = ContentType.objects.get(app_label=data_content_type[0], model=data_content_type[1])
                 product = content_type.get_object_for_this_type(pk=request.data['object_id'])
             except:
                 raise Http404
