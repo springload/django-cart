@@ -117,3 +117,7 @@ class Cart:
     def count(self):
         assert self.cart is not None
         return self.cart.item_set.all().count()
+
+    def checkout(self):
+        assert self.cart is not None
+        self.cart.checkout()
