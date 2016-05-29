@@ -12,7 +12,6 @@ from rest_framework.test import APIClient
 from cart.cart import Cart, CART_ID
 from .utils import _create_user_in_database, _create_item_in_database, _create_cart_in_database
 from cart.models import Item
-from cart import urls as cart_urls
 
 
 class CartApiTestCase(TestCase):
@@ -30,7 +29,7 @@ class CartApiTestCase(TestCase):
         session.save()
         user = _create_user_in_database()
         _create_item_in_database(cart.cart, user, quantity=1.5, unit_price=Decimal("100"))
-        response = self.client.get(reverse('cart_cart', urlconf=cart_urls), format='json')
+        response = self.client.get(reverse('cart_cart'), format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['currency_code'], 'USD')
         self.assertEqual(response.data['exchange_rate'], '1.000000')
@@ -48,7 +47,7 @@ class CartApiTestCase(TestCase):
         session.save()
         user = _create_user_in_database()
         item = _create_item_in_database(cart.cart, user, quantity=1.5, unit_price=Decimal("100"))
-        response = self.client.get(reverse('cart_item', urlconf=cart_urls, kwargs={'pk': item.pk}), format='json')
+        response = self.client.get(reverse('cart_item', kwargs={'pk': item.pk}), format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['unit_price'], '100.00')
         self.assertEqual(response.data['total_price'], 150)
@@ -61,12 +60,12 @@ class CartApiTestCase(TestCase):
         session = self.client.session
         session[CART_ID] = cart.cart.id
         session.save()
-        response = self.client.get(reverse('cart_item', urlconf=cart_urls, kwargs={'pk': '456789'}), format='json')
+        response = self.client.get(reverse('cart_item', kwargs={'pk': '456789'}), format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         user = _create_user_in_database()
         new_cart = _create_cart_in_database()
         item = _create_item_in_database(new_cart, user, quantity='1', unit_price=Decimal("5"))
-        response = self.client.get(reverse('cart_item', urlconf=cart_urls, kwargs={'pk': item.id}), format='json')
+        response = self.client.get(reverse('cart_item', kwargs={'pk': item.id}), format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_api_put_item(self):
@@ -77,7 +76,7 @@ class CartApiTestCase(TestCase):
         user = _create_user_in_database()
         item = _create_item_in_database(cart.cart, user, quantity=1, unit_price=Decimal("5"))
         response = self.client.put(
-            reverse('cart_item', urlconf=cart_urls, kwargs={'pk': item.id}),
+            reverse('cart_item', kwargs={'pk': item.id}),
             {'quantity': '2.00', 'unit_price': item.unit_price},
             format='json',
         )
@@ -94,7 +93,7 @@ class CartApiTestCase(TestCase):
         user = _create_user_in_database()
         item = _create_item_in_database(cart.cart, user, quantity=1, unit_price=Decimal("5"))
         response = self.client.delete(
-            reverse('cart_item', urlconf=cart_urls, kwargs={'pk': item.id}),
+            reverse('cart_item', kwargs={'pk': item.id}),
             format='json',
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -105,7 +104,7 @@ class CartApiTestCase(TestCase):
         else:
             self.assertTrue(False)
 
-        response = self.client.get(reverse('cart_count', urlconf=cart_urls), format='json')
+        response = self.client.get(reverse('cart_count'), format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'count': 0})
 
@@ -113,7 +112,7 @@ class CartApiTestCase(TestCase):
         user = _create_user_in_database()
         content_type = ContentType.objects.get(model='user')
         response = self.client.post(
-            reverse('cart_items', urlconf=cart_urls),
+            reverse('cart_items'),
             {
                 'content_type': '%s.%s' % (content_type.app_label, content_type.model),
                 'object_id': user.pk,
@@ -123,7 +122,7 @@ class CartApiTestCase(TestCase):
             format='json',
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        response = self.client.get(reverse('cart_count', urlconf=cart_urls), format='json')
+        response = self.client.get(reverse('cart_count'), format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'count': 1})
 
@@ -132,13 +131,13 @@ class CartApiTestCase(TestCase):
         session = self.client.session
         session[CART_ID] = cart.cart.id
         session.save()
-        response = self.client.get(reverse('cart_cart', urlconf=cart_urls), format='json')
+        response = self.client.get(reverse('cart_cart'), format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['currency_code'], 'USD')
         self.assertEqual(response.data['exchange_rate'], '1.000000')
         self.assertEqual(response.data['tax_rate'], '0.00')
 
     def test_api_cart_count(self):
-        response = self.client.get(reverse('cart_count', urlconf=cart_urls), format='json')
+        response = self.client.get(reverse('cart_count'), format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'count': 0})
