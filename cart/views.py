@@ -61,8 +61,8 @@ class ItemDetail(APIView):
             except ItemDoesNotExist:
                 raise Http404
             # TODO Jordi check if we need the whole cart or just the item
-            item = self.get_object(pk)
-            serializer = ItemSerializer(item)
+            # item = self.get_object(pk)
+            serializer = CartSerializer(cart.cart)
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -77,8 +77,9 @@ class ItemDetail(APIView):
             cart.remove(product)
         except ItemDoesNotExist:
             raise Http404
-        # TODO Jordi check if we need the whole cart or nothing
-        return Response(status=status.HTTP_204_NO_CONTENT)
+
+        serializer = CartSerializer(cart.cart)
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
 
 class ItemList(APIView):
@@ -97,6 +98,7 @@ class ItemList(APIView):
                 product = content_type.get_object_for_this_type(pk=request.data['object_id'])
             except:
                 raise Http404
+
             cart.add(product, serializer.validated_data['quantity'], serializer.validated_data['unit_price'])
             try:
                 item = Item.objects.get(
@@ -104,8 +106,10 @@ class ItemList(APIView):
                     product=product,
                 )
             except:
+                print("EEEEp")
                 raise Http404
-            serializer = ItemSerializer(item)
+
+            serializer = CartSerializer(cart.cart)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
