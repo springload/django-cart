@@ -18,7 +18,9 @@ class ItemSerializer(serializers.HyperlinkedModelSerializer):
 
 class CartSerializer(serializers.HyperlinkedModelSerializer):
     item_set = ItemSerializer(many=True, read_only=True)
+    pre_tax_total = serializers.ReadOnlyField()
+    total = serializers.ReadOnlyField()
 
     class Meta:
         model = Cart
-        fields = ('pk', 'creation_date', 'currency_code', 'tax_rate', 'exchange_rate', 'item_set')
+        fields = ('pk', 'creation_date', 'currency_code', 'tax_rate', 'exchange_rate', 'item_set', 'total', 'pre_tax_total', )

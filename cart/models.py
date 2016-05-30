@@ -18,6 +18,28 @@ class Cart(models.Model):
         self.checked_out = True
         self.save()
 
+    @property
+    def pre_tax_total(self):
+        result = 0
+        for item in self.item_set.all():
+            result += item.total_price
+        return result
+
+    @property
+    def total(self):
+        result = self.pre_tax_total
+        if self.tax_rate > 0:
+            result += result * self.tax_rate
+        return result
+
+    def clear(self):
+        for item in self.item_set.all():
+            item.delete()
+
+    @property
+    def count(self):
+        return self.item_set.all().count()
+
     class Meta:
         verbose_name = _('cart')
         verbose_name_plural = _('carts')

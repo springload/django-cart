@@ -97,17 +97,11 @@ class Cart:
 
     def pre_tax_total(self):
         assert self.cart is not None
-        result = 0
-        for item in self.cart.item_set.all():
-            result += item.total_price
-        return result
+        return self.cart.pre_tax_total
 
     def total(self):
         assert self.cart is not None
-        result = self.pre_tax_total()
-        if self.cart.tax_rate > 0:
-            result += result * self.cart.tax_rate
-        return result
+        return self.cart.total
 
     def clear(self):
         assert self.cart is not None
