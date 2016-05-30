@@ -90,7 +90,9 @@ class ItemList(APIView):
         cart = Cart.get(request)
         if cart is None:
             cart = Cart(request)
+
         serializer = ItemSerializer(data=request.data)
+
         if serializer.is_valid():
             try:
                 data_content_type = [x for x in request.data['content_type'].split('.')]
@@ -99,14 +101,13 @@ class ItemList(APIView):
             except:
                 raise Http404
 
-            cart.add(product, serializer.validated_data['quantity'], serializer.validated_data['unit_price'])
+            cart.add(product, unit_price=serializer.validated_data['unit_price'], quantity=serializer.validated_data['quantity'], )
             try:
                 item = Item.objects.get(
                     cart=cart.cart,
                     product=product,
                 )
             except:
-                print("EEEEp")
                 raise Http404
 
             serializer = CartSerializer(cart.cart)

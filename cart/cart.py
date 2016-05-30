@@ -65,6 +65,7 @@ class Cart:
             item.unit_price = unit_price
             item.quantity = Decimal(quantity)
             item.save()
+            return item
 
     def remove(self, product):
         assert self.cart is not None
