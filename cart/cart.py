@@ -1,8 +1,9 @@
 import datetime
-import cart.models as models
+from . import models
 from decimal import Decimal
+from django.conf import settings
 
-CART_ID = 'CART-ID'
+CART_ID = settings.CARTID
 
 
 class ItemAlreadyExists(Exception):
@@ -13,7 +14,8 @@ class ItemDoesNotExist(Exception):
     pass
 
 
-class Cart:
+class Cart(object):
+
     def __init__(self, request):
         cart_id = request.session.get(CART_ID)
 
@@ -42,8 +44,11 @@ class Cart:
             return None
 
     def __iter__(self):
-        for item in self.cart.item_set.all():
+        for item in self.cart.items.all():
             yield item
+
+    def items(self):
+        return self.cart.items.all()
 
     def new(self, request):
         cart = models.Cart(creation_date=datetime.datetime.now())

@@ -1,9 +1,11 @@
 import json
+from decimal import Decimal
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.contrib.contenttypes.models import ContentType
 from django.core import serializers
+from django.contrib.contenttypes.fields import GenericRelation
 
 
 class Cart(models.Model):
@@ -18,10 +20,11 @@ class Cart(models.Model):
         self.checked_out = True
         self.save()
 
+
     @property
     def pre_tax_total(self):
         result = 0
-        for item in self.item_set.all():
+        for item in self.items.all():
             result += item.total_price
         return result
 
@@ -33,20 +36,20 @@ class Cart(models.Model):
         return result
 
     def clear(self):
-        for item in self.item_set.all():
+        for item in self.items.all():
             item.delete()
 
     @property
     def count(self):
-        return self.item_set.all().count()
+        return self.items.all().count()
 
     class Meta:
         verbose_name = _('cart')
         verbose_name_plural = _('carts')
         ordering = ('-creation_date',)
 
-    def __unicode__(self):
-        return u'Cart  {0} Created: {1}'.format(self.id, self.creation_date)
+    def __str__(self):
+        return 'Cart  {0} Created: {1}'.format(self.id, self.creation_date)
 
 
 class ItemManager(models.Manager):
@@ -59,13 +62,14 @@ class ItemManager(models.Manager):
 
 
 class Item(models.Model):
-    cart = models.ForeignKey(Cart, verbose_name=_('cart'))
+    cart = models.ForeignKey(Cart, verbose_name=_('cart'), related_name=_('items'))
     quantity = models.DecimalField(max_digits=18, decimal_places=2, verbose_name=_('quantity'))
     unit_price = models.DecimalField(max_digits=18, decimal_places=2, verbose_name=_('unit price'))
     # product as generic relation
     content_type = models.ForeignKey(ContentType)
     # Support for uuids and int Ids
     object_id = models.CharField(max_length=128)
+
 
     objects = ItemManager()
 
@@ -85,6 +89,10 @@ class Item(models.Model):
     # product
     def get_product(self):
         return self.content_type.get_object_for_this_type(pk=self.object_id)
+
+    @property
+    def product_type(self):
+        return self.content_type.name
 
     def set_product(self, product):
         self.content_type = ContentType.objects.get_for_model(type(product))
