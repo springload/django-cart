@@ -58,20 +58,8 @@ class Cart(object):
 
     def add(self, product, unit_price, quantity=1):
         assert self.cart is not None
-        try:
-            item = models.Item.objects.get(
-                cart=self.cart,
-                product=product,
-            )
-        except models.Item.DoesNotExist:
-            item = models.Item()
-            item.cart = self.cart
-            item.product = product
-            item.unit_price = unit_price
-            item.quantity = Decimal(quantity)
-            item.save()
-            return item
-
+        self.cart.add_item(product, unit_price, quantity)
+    
     def remove(self, product):
         assert self.cart is not None
         try:

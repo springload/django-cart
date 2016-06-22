@@ -9,7 +9,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 
 
 class Cart(models.Model):
-
+    
     creation_date = models.DateTimeField(verbose_name=_('creation date'))
     checked_out = models.BooleanField(default=False, verbose_name=_('checked out'))
     currency_code = models.CharField(default='USD', verbose_name=_('currency'), max_length=20)
@@ -51,6 +51,23 @@ class Cart(models.Model):
     def __str__(self):
         return 'Cart  {0} Created: {1}'.format(self.id, self.creation_date)
 
+    def add_item(self, product, unit_price, quantity=1):
+        try:
+            item = Item.objects.get(
+                cart=self,
+                product=product,
+            )
+        except Item.DoesNotExist:
+            item = Item(
+                cart=self,
+                product=product,
+                unit_price=unit_price,
+                quantity=Decimal(quantity)
+            )
+            item.save()
+
+        return item
+
 
 class ItemManager(models.Manager):
     def get(self, *args, **kwargs):
@@ -70,7 +87,6 @@ class Item(models.Model):
     # Support for uuids and int Ids
     object_id = models.CharField(max_length=128)
 
-
     objects = ItemManager()
 
     class Meta:
@@ -85,6 +101,12 @@ class Item(models.Model):
     def total_price(self):
         r = self.quantity * self.unit_price
         return int(round(r, 0))
+
+    """
+    @cached_property
+    def product(self):
+        return self.get_product()
+    """
 
     # product
     def get_product(self):
