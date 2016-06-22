@@ -58,7 +58,12 @@ class Cart(models.Model):
                 product=product,
             )
         except Item.DoesNotExist:
-            item = Item()
+            item = Item(
+                cart=self,
+                product=product,
+                unit_price=unit_price,
+
+            )
             item.cart = self
             item.product = product
             item.unit_price = unit_price
