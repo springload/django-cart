@@ -13,27 +13,26 @@ class Cart(models.Model):
     creation_date = models.DateTimeField(verbose_name=_('creation date'))
     checked_out = models.BooleanField(default=False, verbose_name=_('checked out'))
     currency_code = models.CharField(default='USD', verbose_name=_('currency'), max_length=20)
-    tax_rate = models.DecimalField(default=0, max_digits=6, decimal_places=2)
+    tax_rate = models.DecimalField(default=0, max_digits=6, decimal_places=4)
     exchange_rate = models.DecimalField(default=1, verbose_name=_('Exchange Rate'), max_digits=10, decimal_places=6)
 
     def checkout(self):
         self.checked_out = True
         self.save()
 
-
     @property
     def pre_tax_total(self):
         result = 0
         for item in self.items.all():
             result += item.total_price
-        return result
+        return '{0:.2f}'.format(result)
 
     @property
     def total(self):
         result = self.pre_tax_total
         if self.tax_rate > 0:
             result += result * self.tax_rate
-        return result
+        return '{0:.2f}'.format(result)
 
     def clear(self):
         for item in self.items.all():
