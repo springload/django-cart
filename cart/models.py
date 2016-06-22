@@ -32,7 +32,7 @@ class Cart(models.Model):
         result = self.pre_tax_total
         if self.tax_rate > 0:
             result += result * self.tax_rate
-        return '{0:.2f}'.format(result)
+        return result
 
     def clear(self):
         for item in self.items.all():
