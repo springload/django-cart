@@ -9,7 +9,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 
 
 class Cart(models.Model):
-    
+
     creation_date = models.DateTimeField(verbose_name=_('creation date'))
     checked_out = models.BooleanField(default=False, verbose_name=_('checked out'))
     currency_code = models.CharField(default='USD', verbose_name=_('currency'), max_length=20)
@@ -62,17 +62,11 @@ class Cart(models.Model):
                 cart=self,
                 product=product,
                 unit_price=unit_price,
-<<<<<<< HEAD
-                quantity=Decimal(quantity)
-            )
-=======
-
             )
             item.cart = self
             item.product = product
             item.unit_price = unit_price
             item.quantity = Decimal(quantity)
->>>>>>> e9c281ad988df2fcdb0c7eca137b3489bfe80ccc
             item.save()
 
         return item

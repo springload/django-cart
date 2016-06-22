@@ -59,7 +59,7 @@ class Cart(object):
     def add(self, product, unit_price, quantity=1):
         assert self.cart is not None
         self.cart.add_item(product, unit_price, quantity)
-    
+
     def remove(self, product):
         assert self.cart is not None
         try:
