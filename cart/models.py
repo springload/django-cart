@@ -13,13 +13,12 @@ class Cart(models.Model):
     creation_date = models.DateTimeField(verbose_name=_('creation date'))
     checked_out = models.BooleanField(default=False, verbose_name=_('checked out'))
     currency_code = models.CharField(default='USD', verbose_name=_('currency'), max_length=20)
-    tax_rate = models.DecimalField(default=0, max_digits=6, decimal_places=2)
+    tax_rate = models.DecimalField(default=0, max_digits=6, decimal_places=4)
     exchange_rate = models.DecimalField(default=1, verbose_name=_('Exchange Rate'), max_digits=10, decimal_places=6)
 
     def checkout(self):
         self.checked_out = True
         self.save()
-
 
     @property
     def pre_tax_total(self):
@@ -33,7 +32,7 @@ class Cart(models.Model):
         result = self.pre_tax_total
         if self.tax_rate > 0:
             result += result * self.tax_rate
-        return result
+        return '{0:.2f}'.format(result)
 
     def clear(self):
         for item in self.items.all():
@@ -50,6 +49,26 @@ class Cart(models.Model):
 
     def __str__(self):
         return 'Cart  {0} Created: {1}'.format(self.id, self.creation_date)
+
+    def add_item(self, product, unit_price, quantity=1):
+        try:
+            item = Item.objects.get(
+                cart=self,
+                product=product,
+            )
+        except Item.DoesNotExist:
+            item = Item(
+                cart=self,
+                product=product,
+                unit_price=unit_price,
+            )
+            item.cart = self
+            item.product = product
+            item.unit_price = unit_price
+            item.quantity = Decimal(quantity)
+            item.save()
+
+        return item
 
 
 class ItemManager(models.Manager):
@@ -70,7 +89,6 @@ class Item(models.Model):
     # Support for uuids and int Ids
     object_id = models.CharField(max_length=128)
 
-
     objects = ItemManager()
 
     class Meta:
@@ -86,9 +104,18 @@ class Item(models.Model):
         r = self.quantity * self.unit_price
         return int(round(r, 0))
 
+    """
+    @cached_property
+    def product(self):
+        return self.get_product()
+    """
+
     # product
     def get_product(self):
         return self.content_type.get_object_for_this_type(pk=self.object_id)
+
+    def product_name(self):
+        return self.product.__str__()
 
     @property
     def product_type(self):
