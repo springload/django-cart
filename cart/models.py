@@ -25,7 +25,7 @@ class Cart(models.Model):
         result = 0
         for item in self.items.all():
             result += item.total_price
-        return result
+        return '{0:.2f}'.format(result)
 
     @property
     def total(self):
