@@ -25,7 +25,8 @@ class Cart(models.Model):
         result = 0
         for item in self.items.all():
             result += item.total_price
-        result = result * self.exchange_rate
+        if self.exchange_rate > 0:
+            result = result * self.exchange_rate
         return round(result, 2)
 
     @property
