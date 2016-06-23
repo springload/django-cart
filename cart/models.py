@@ -1,5 +1,5 @@
 import json
-from decimal import Decimal
+from decimal import getcontext, Decimal, ROUND_FLOOR
 
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
@@ -25,14 +25,21 @@ class Cart(models.Model):
         result = 0
         for item in self.items.all():
             result += item.total_price
-        return result
+        result = result * self.exchange_rate
+        return round(result, 2)
+
+    @property
+    def tax(self):
+        result = 0
+        if self.tax_rate > 0:
+            result = self.pre_tax_total * self.tax_rate
+        return round(result, 2)
 
     @property
     def total(self):
         result = self.pre_tax_total
-        if self.tax_rate > 0:
-            result += result * self.tax_rate
-        return result
+        result += self.tax
+        return round(result, 2)
 
     def clear(self):
         for item in self.items.all():
