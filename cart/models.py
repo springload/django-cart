@@ -109,7 +109,7 @@ class Item(models.Model):
 
     @property
     def total_price(self):
-        r = self.quantity * self.unit_price
+        r = self.quantity * self.unit_price * self.cart.exchange_rate
         return int(round(r, 0))
 
     """
