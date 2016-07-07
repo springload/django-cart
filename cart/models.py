@@ -108,9 +108,34 @@ class Item(models.Model):
         return u'%d units of %s' % (self.quantity, self.product.__class__.__name__)
 
     @property
+    def native_total(self):
+        return Decimal(round(self.total_price * self.cart.exchange_rate, 2))
+
+    @property
+    def tax(self):
+        """
+        Look out! - NZD specific/only for the moment
+        if we addd more we might need to add
+        a reverse calculation engine/strategy
+        for each supported currency
+        :return:
+        """
+        if self.currency =='NZD':
+            return self.native_total * 3 / 23
+        return 0
+
+    @property
+    def pre_tax_total(self):
+        return self.native_total - self.tax
+
+    @property
+    def currency(self):
+        return self.cart.currency_code
+
+    @property
     def total_price(self):
-        r = self.quantity * self.unit_price * self.cart.exchange_rate
-        return int(round(r, 0))
+        r = self.quantity * self.unit_price
+        return Decimal(round(r, 2))
 
     """
     @cached_property
