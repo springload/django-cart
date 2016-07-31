@@ -10,7 +10,7 @@ from django.contrib.contenttypes.fields import GenericRelation
 
 class Cart(models.Model):
 
-    creation_date = models.DateTimeField(verbose_name=_('creation date'))
+    creation_date = models.DateTimeField(verbose_name=_('creation date'), auto_now_add=True)
     checked_out = models.BooleanField(default=False, verbose_name=_('checked out'))
     currency_code = models.CharField(default='USD', verbose_name=_('currency'), max_length=20)
     tax_rate = models.DecimalField(default=0, max_digits=6, decimal_places=4)
@@ -65,16 +65,17 @@ class Cart(models.Model):
                 product=product,
             )
         except Item.DoesNotExist:
-            item = Item(
+            item = Item.objects.create(
                 cart=self,
                 product=product,
-                unit_price=unit_price,
+                quantity= Decimal(quantity),
+                unit_price= unit_price
             )
-            item.cart = self
-            item.product = product
-            item.unit_price = unit_price
-            item.quantity = Decimal(quantity)
-            item.save()
+
+        item.product = product
+        item.unit_price = unit_price
+        item.quantity = Decimal(quantity)
+        item.save()
 
         return item
 

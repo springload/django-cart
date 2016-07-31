@@ -17,7 +17,6 @@ def cart_required(fn):
         cart = Cart.get(request)
         if not cart:
             raise Http404
-
         try:
             item = view.get_object(pk)
         except ObjectDoesNotExist:
@@ -26,6 +25,7 @@ def cart_required(fn):
         # Check item belongs to cart
         if item.cart.id == cart.cart.id:
             # user owns the cart, call the function with all params
+            view.cart = cart
             return fn(view, request, pk, *args, **kwargs)
         else:
             content = {'error': 'forbidden'}
