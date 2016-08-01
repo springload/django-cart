@@ -27,13 +27,13 @@ class Cart(models.Model):
             result += item.total_price
         if self.exchange_rate > 0:
             result = result * self.exchange_rate
-        return round(result, 2)
+        return Decimal(round(result, 2))
 
     @property
     def tax(self):
         result = 0
         if self.tax_rate > 0:
-            result = self.pre_tax_total * self.tax_rate
+            result = Decimal(self.pre_tax_total) * Decimal(self.tax_rate)
         return round(result, 2)
 
     @property
