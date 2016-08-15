@@ -15,6 +15,7 @@ class Cart(models.Model):
     def __unicode__(self):
         return unicode(self.creation_date)
 
+
 class ItemManager(models.Manager):
     def get(self, *args, **kwargs):
         if 'product' in kwargs:
@@ -22,6 +23,7 @@ class ItemManager(models.Manager):
             kwargs['object_id'] = kwargs['product'].pk
             del(kwargs['product'])
         return super(ItemManager, self).get(*args, **kwargs)
+
 
 class Item(models.Model):
     cart = models.ForeignKey(Cart, verbose_name=_('cart'), on_delete=models.CASCADE)
@@ -43,7 +45,50 @@ class Item(models.Model):
 
     def total_price(self):
         return self.quantity * self.unit_price
+
     total_price = property(total_price)
+
+    def cart_creation_date(self):
+        return self.cart.creation_date
+
+    def product_name(self):
+        return "" #self.product.course.title
+
+    def product_description(self):
+        return "" #u'%s: %s' % (self.product.__class__.__name__, self.product.course.title)
+
+    def course_xrm_id(self):
+        return "" # str(self.product.course.xrm_id)
+
+    def get_item_name(self):
+        return str(self)
+
+    def booking_id(self):
+        return self.cart.booking.id
+
+    def booking_payment_method(self):
+        return self.cart.booking.payment_method
+
+    def payment_transaction_id(self):
+        if not hasattr(self, "payment"):
+            self.payment = self.cart.payments.latest()
+        return str(self.payment.transaction_id)
+
+    def payment_transaction_total(self):
+        if not hasattr(self, "payment"):
+            self.payment = self.cart.payments.latest()
+        return self.payment.total
+
+    def get_booker(self):
+        return {
+            "first_name": self.cart.booking.first_name,
+            "last_name": self.cart.booking.last_name,
+            "address1": self.cart.booking.address1,
+            "address2": self.cart.booking.address2,
+            "address3": self.cart.booking.address3,
+            "suburb": self.cart.booking.suburb,
+            "organisation_name": self.cart.booking.organisation_name
+        }
 
     # product
     def get_product(self):
