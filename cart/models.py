@@ -52,13 +52,13 @@ class Item(models.Model):
         return self.cart.creation_date
 
     def product_name(self):
-        return "" #self.product.course.title
+        return ""
 
     def product_description(self):
-        return "" #u'%s: %s' % (self.product.__class__.__name__, self.product.course.title)
+        return ""
 
     def course_xrm_id(self):
-        return "" # str(self.product.course.xrm_id)
+        return ""
 
     def get_item_name(self):
         return str(self)
