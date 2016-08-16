@@ -12,7 +12,7 @@ class ItemSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Item
-        fields = ('pk', 'cart', 'object_id', 'quantity', 'unit_price', 'total_price', 'content_type', 'serialized_product')
+        fields = ('pk', 'cart', 'object_id', 'quantity', 'native_total', 'unit_price', 'total_price', 'content_type', 'serialized_product')
         read_only_fields = ('pk', 'cart', 'object_id', 'total_price', 'content_type', 'serialized_product')
 
 
