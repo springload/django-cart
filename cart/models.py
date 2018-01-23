@@ -4,6 +4,7 @@ from django.contrib.contenttypes.models import ContentType
 
 
 class Cart(models.Model):
+    app_label = 'cart'
     creation_date = models.DateTimeField(verbose_name=_('creation date'))
     checked_out = models.BooleanField(default=False, verbose_name=_('checked out'))
 
@@ -26,6 +27,8 @@ class ItemManager(models.Manager):
 
 
 class Item(models.Model):
+    app_label = 'cart'
+
     cart = models.ForeignKey(Cart, verbose_name=_('cart'), on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(verbose_name=_('quantity'))
     unit_price = models.DecimalField(max_digits=18, decimal_places=2, verbose_name=_('unit price'))
