@@ -1,7 +1,7 @@
 import datetime
-import models
+from . import models
+from .constants import CART_ID
 
-CART_ID = 'CART-ID'
 
 class ItemAlreadyExists(Exception):
     pass
@@ -81,7 +81,7 @@ class Cart:
         for item in self.cart.item_set.all():
             result += 1 * item.quantity
         return result
-        
+
     def summary(self):
         result = 0
         for item in self.cart.item_set.all():
