@@ -17,7 +17,8 @@ setup(
     url='https://github.com/bmentges/django-cart',
     packages=['cart', 'cart.migrations'],
     install_requires=[
-        'rest_framework',
+        'djangorestframework==3.4.3',
+        'djangorestframework-filters==0.8.0',
     ],
     classifiers=[
         "Development Status :: 5 - Production/Stable",
