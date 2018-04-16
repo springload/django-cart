@@ -99,12 +99,12 @@ class Cart(object):
 
     def clear(self):
         assert self.cart is not None
-        for item in self.cart.item_set.all():
+        for item in self.cart.items.all():
             item.delete()
 
     def count(self):
         assert self.cart is not None
-        return self.cart.item_set.all().count()
+        return self.cart.items.all().count()
 
     def checkout(self):
         assert self.cart is not None
